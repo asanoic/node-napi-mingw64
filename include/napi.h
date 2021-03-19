@@ -136,21 +136,31 @@ namespace Napi {
   class TypedArray;
   template <typename T> class TypedArrayOf;
 
-  typedef TypedArrayOf<int8_t> Int8Array;     ///< Typed-array of signed 8-bit integers
-  typedef TypedArrayOf<uint8_t> Uint8Array;   ///< Typed-array of unsigned 8-bit integers
-  typedef TypedArrayOf<int16_t> Int16Array;   ///< Typed-array of signed 16-bit integers
-  typedef TypedArrayOf<uint16_t> Uint16Array; ///< Typed-array of unsigned 16-bit integers
-  typedef TypedArrayOf<int32_t> Int32Array;   ///< Typed-array of signed 32-bit integers
-  typedef TypedArrayOf<uint32_t> Uint32Array; ///< Typed-array of unsigned 32-bit integers
-  typedef TypedArrayOf<float> Float32Array;   ///< Typed-array of 32-bit floating-point values
-  typedef TypedArrayOf<double> Float64Array;  ///< Typed-array of 64-bit floating-point values
+  using Int8Array =
+      TypedArrayOf<int8_t>;  ///< Typed-array of signed 8-bit integers
+  using Uint8Array =
+      TypedArrayOf<uint8_t>;  ///< Typed-array of unsigned 8-bit integers
+  using Int16Array =
+      TypedArrayOf<int16_t>;  ///< Typed-array of signed 16-bit integers
+  using Uint16Array =
+      TypedArrayOf<uint16_t>;  ///< Typed-array of unsigned 16-bit integers
+  using Int32Array =
+      TypedArrayOf<int32_t>;  ///< Typed-array of signed 32-bit integers
+  using Uint32Array =
+      TypedArrayOf<uint32_t>;  ///< Typed-array of unsigned 32-bit integers
+  using Float32Array =
+      TypedArrayOf<float>;  ///< Typed-array of 32-bit floating-point values
+  using Float64Array =
+      TypedArrayOf<double>;  ///< Typed-array of 64-bit floating-point values
 #if NAPI_VERSION > 5
-  typedef TypedArrayOf<int64_t> BigInt64Array;   ///< Typed array of signed 64-bit integers
-  typedef TypedArrayOf<uint64_t> BigUint64Array; ///< Typed array of unsigned 64-bit integers
+  using BigInt64Array =
+      TypedArrayOf<int64_t>;  ///< Typed array of signed 64-bit integers
+  using BigUint64Array =
+      TypedArrayOf<uint64_t>;  ///< Typed array of unsigned 64-bit integers
 #endif  // NAPI_VERSION > 5
 
   /// Defines the signature of a N-API C++ module's registration callback (init) function.
-  typedef Object (*ModuleRegisterCallback)(Env env, Object exports);
+  using ModuleRegisterCallback = Object (*)(Env env, Object exports);
 
   class MemoryManagement;
 
@@ -822,6 +832,11 @@ namespace Napi {
 
     void* Data();        ///< Gets a pointer to the data buffer.
     size_t ByteLength(); ///< Gets the length of the array buffer in bytes.
+
+#if NAPI_VERSION >= 7
+    bool IsDetached() const;
+    void Detach();
+#endif  // NAPI_VERSION >= 7
   };
 
   /// A JavaScript typed-array value with unknown array type.
@@ -1003,70 +1018,71 @@ namespace Napi {
 
   class Function : public Object {
   public:
-    typedef void (*VoidCallback)(const CallbackInfo& info);
-    typedef Value (*Callback)(const CallbackInfo& info);
+   using VoidCallback = void (*)(const CallbackInfo& info);
+   using Callback = Value (*)(const CallbackInfo& info);
 
-    template <VoidCallback cb>
-    static Function New(napi_env env,
-                        const char* utf8name = nullptr,
-                        void* data = nullptr);
+   template <VoidCallback cb>
+   static Function New(napi_env env,
+                       const char* utf8name = nullptr,
+                       void* data = nullptr);
 
-    template <Callback cb>
-    static Function New(napi_env env,
-                        const char* utf8name = nullptr,
-                        void* data = nullptr);
+   template <Callback cb>
+   static Function New(napi_env env,
+                       const char* utf8name = nullptr,
+                       void* data = nullptr);
 
-    template <VoidCallback cb>
-    static Function New(napi_env env,
-                        const std::string& utf8name,
-                        void* data = nullptr);
+   template <VoidCallback cb>
+   static Function New(napi_env env,
+                       const std::string& utf8name,
+                       void* data = nullptr);
 
-    template <Callback cb>
-    static Function New(napi_env env,
-                        const std::string& utf8name,
-                        void* data = nullptr);
+   template <Callback cb>
+   static Function New(napi_env env,
+                       const std::string& utf8name,
+                       void* data = nullptr);
 
-    /// Callable must implement operator() accepting a const CallbackInfo&
-    /// and return either void or Value.
-    template <typename Callable>
-    static Function New(napi_env env,
-                        Callable cb,
-                        const char* utf8name = nullptr,
-                        void* data = nullptr);
-    /// Callable must implement operator() accepting a const CallbackInfo&
-    /// and return either void or Value.
-    template <typename Callable>
-    static Function New(napi_env env,
-                        Callable cb,
-                        const std::string& utf8name,
-                        void* data = nullptr);
+   /// Callable must implement operator() accepting a const CallbackInfo&
+   /// and return either void or Value.
+   template <typename Callable>
+   static Function New(napi_env env,
+                       Callable cb,
+                       const char* utf8name = nullptr,
+                       void* data = nullptr);
+   /// Callable must implement operator() accepting a const CallbackInfo&
+   /// and return either void or Value.
+   template <typename Callable>
+   static Function New(napi_env env,
+                       Callable cb,
+                       const std::string& utf8name,
+                       void* data = nullptr);
 
-    Function();
-    Function(napi_env env, napi_value value);
+   Function();
+   Function(napi_env env, napi_value value);
 
-    Value operator ()(const std::initializer_list<napi_value>& args) const;
+   Value operator()(const std::initializer_list<napi_value>& args) const;
 
-    Value Call(const std::initializer_list<napi_value>& args) const;
-    Value Call(const std::vector<napi_value>& args) const;
-    Value Call(size_t argc, const napi_value* args) const;
-    Value Call(napi_value recv, const std::initializer_list<napi_value>& args) const;
-    Value Call(napi_value recv, const std::vector<napi_value>& args) const;
-    Value Call(napi_value recv, size_t argc, const napi_value* args) const;
+   Value Call(const std::initializer_list<napi_value>& args) const;
+   Value Call(const std::vector<napi_value>& args) const;
+   Value Call(size_t argc, const napi_value* args) const;
+   Value Call(napi_value recv,
+              const std::initializer_list<napi_value>& args) const;
+   Value Call(napi_value recv, const std::vector<napi_value>& args) const;
+   Value Call(napi_value recv, size_t argc, const napi_value* args) const;
 
-    Value MakeCallback(napi_value recv,
-                       const std::initializer_list<napi_value>& args,
-                       napi_async_context context = nullptr) const;
-    Value MakeCallback(napi_value recv,
-                       const std::vector<napi_value>& args,
-                       napi_async_context context = nullptr) const;
-    Value MakeCallback(napi_value recv,
-                       size_t argc,
-                       const napi_value* args,
-                       napi_async_context context = nullptr) const;
+   Value MakeCallback(napi_value recv,
+                      const std::initializer_list<napi_value>& args,
+                      napi_async_context context = nullptr) const;
+   Value MakeCallback(napi_value recv,
+                      const std::vector<napi_value>& args,
+                      napi_async_context context = nullptr) const;
+   Value MakeCallback(napi_value recv,
+                      size_t argc,
+                      const napi_value* args,
+                      napi_async_context context = nullptr) const;
 
-    Object New(const std::initializer_list<napi_value>& args) const;
-    Object New(const std::vector<napi_value>& args) const;
-    Object New(size_t argc, const napi_value* args) const;
+   Object New(const std::initializer_list<napi_value>& args) const;
+   Object New(const std::vector<napi_value>& args) const;
+   Object New(size_t argc, const napi_value* args) const;
   };
 
   class Promise : public Object {
@@ -1159,9 +1175,11 @@ namespace Napi {
     void Reset();
     void Reset(const T& value, uint32_t refcount = 0);
 
-    // Call this on a reference that is declared as static data, to prevent its destructor
-    // from running at program shutdown time, which would attempt to reset the reference when
-    // the environment is no longer valid.
+    // Call this on a reference that is declared as static data, to prevent its
+    // destructor from running at program shutdown time, which would attempt to
+    // reset the reference when the environment is no longer valid. Avoid using
+    // this if at all possible. If you do need to use static data, MAKE SURE to
+    // warn your users that your addon is NOT threadsafe.
     void SuppressDestruct();
 
   protected:
@@ -1376,14 +1394,17 @@ namespace Napi {
 
   protected:
     /// !cond INTERNAL
-    typedef napi_status (*create_error_fn)(napi_env envb, napi_value code, napi_value msg, napi_value* result);
+   using create_error_fn = napi_status (*)(napi_env envb,
+                                           napi_value code,
+                                           napi_value msg,
+                                           napi_value* result);
 
-    template <typename TError>
-    static TError New(napi_env env,
-                      const char* message,
-                      size_t length,
-                      create_error_fn create_error);
-    /// !endcond
+   template <typename TError>
+   static TError New(napi_env env,
+                     const char* message,
+                     size_t length,
+                     create_error_fn create_error);
+   /// !endcond
 
   private:
     mutable std::string _message;
@@ -1438,8 +1459,8 @@ namespace Napi {
 
   class PropertyDescriptor {
   public:
-    typedef Napi::Value (*GetterCallback)(const Napi::CallbackInfo& info);
-    typedef void (*SetterCallback)(const Napi::CallbackInfo& info);
+   using GetterCallback = Napi::Value (*)(const Napi::CallbackInfo& info);
+   using SetterCallback = void (*)(const Napi::CallbackInfo& info);
 
 #ifndef NODE_ADDON_API_DISABLE_DEPRECATED
     template <typename Getter>
@@ -1659,13 +1680,13 @@ namespace Napi {
   template <typename T>
   class InstanceWrap {
    public:
+    using InstanceVoidMethodCallback = void (T::*)(const CallbackInfo& info);
+    using InstanceMethodCallback = Napi::Value (T::*)(const CallbackInfo& info);
+    using InstanceGetterCallback = Napi::Value (T::*)(const CallbackInfo& info);
+    using InstanceSetterCallback = void (T::*)(const CallbackInfo& info,
+                                               const Napi::Value& value);
 
-    typedef void (T::*InstanceVoidMethodCallback)(const CallbackInfo& info);
-    typedef Napi::Value (T::*InstanceMethodCallback)(const CallbackInfo& info);
-    typedef Napi::Value (T::*InstanceGetterCallback)(const CallbackInfo& info);
-    typedef void (T::*InstanceSetterCallback)(const CallbackInfo& info, const Napi::Value& value);
-
-    typedef ClassPropertyDescriptor<T> PropertyDescriptor;
+    using PropertyDescriptor = ClassPropertyDescriptor<T>;
 
     static PropertyDescriptor InstanceMethod(const char* utf8name,
                                              InstanceVoidMethodCallback method,
@@ -1730,11 +1751,12 @@ namespace Napi {
    private:
     using This = InstanceWrap<T>;
 
-    typedef MethodCallbackData<T, InstanceVoidMethodCallback> InstanceVoidMethodCallbackData;
-    typedef MethodCallbackData<T, InstanceMethodCallback> InstanceMethodCallbackData;
-    typedef AccessorCallbackData<T,
-                                 InstanceGetterCallback,
-                                 InstanceSetterCallback> InstanceAccessorCallbackData;
+    using InstanceVoidMethodCallbackData =
+        MethodCallbackData<T, InstanceVoidMethodCallback>;
+    using InstanceMethodCallbackData =
+        MethodCallbackData<T, InstanceMethodCallback>;
+    using InstanceAccessorCallbackData =
+        AccessorCallbackData<T, InstanceGetterCallback, InstanceSetterCallback>;
 
     static napi_value InstanceVoidMethodCallbackWrapper(napi_env env, napi_callback_info info);
     static napi_value InstanceMethodCallbackWrapper(napi_env env, napi_callback_info info);
@@ -1742,13 +1764,18 @@ namespace Napi {
     static napi_value InstanceSetterCallbackWrapper(napi_env env, napi_callback_info info);
 
     template <InstanceSetterCallback method>
-    static napi_value WrappedMethod(napi_env env, napi_callback_info info) noexcept;
+    static napi_value WrappedMethod(napi_env env,
+                                    napi_callback_info info) NAPI_NOEXCEPT;
 
     template <InstanceSetterCallback setter> struct SetterTag {};
 
     template <InstanceSetterCallback setter>
-    static napi_callback WrapSetter(SetterTag<setter>) noexcept { return &This::WrappedMethod<setter>; }
-    static napi_callback WrapSetter(SetterTag<nullptr>) noexcept { return nullptr; }
+    static napi_callback WrapSetter(SetterTag<setter>) NAPI_NOEXCEPT {
+      return &This::WrappedMethod<setter>;
+    }
+    static napi_callback WrapSetter(SetterTag<nullptr>) NAPI_NOEXCEPT {
+      return nullptr;
+    }
   };
 
   /// Base class to be extended by C++ classes exposed to JavaScript; each C++ class instance gets
@@ -1785,12 +1812,13 @@ namespace Napi {
     static T* Unwrap(Object wrapper);
 
     // Methods exposed to JavaScript must conform to one of these callback signatures.
-    typedef void (*StaticVoidMethodCallback)(const CallbackInfo& info);
-    typedef Napi::Value (*StaticMethodCallback)(const CallbackInfo& info);
-    typedef Napi::Value (*StaticGetterCallback)(const CallbackInfo& info);
-    typedef void (*StaticSetterCallback)(const CallbackInfo& info, const Napi::Value& value);
+    using StaticVoidMethodCallback = void (*)(const CallbackInfo& info);
+    using StaticMethodCallback = Napi::Value (*)(const CallbackInfo& info);
+    using StaticGetterCallback = Napi::Value (*)(const CallbackInfo& info);
+    using StaticSetterCallback = void (*)(const CallbackInfo& info,
+                                          const Napi::Value& value);
 
-    typedef ClassPropertyDescriptor<T> PropertyDescriptor;
+    using PropertyDescriptor = ClassPropertyDescriptor<T>;
 
     static Function DefineClass(Napi::Env env,
                                 const char* utf8name,
@@ -1873,21 +1901,29 @@ namespace Napi {
                                 const napi_property_descriptor* props,
                                 void* data = nullptr);
 
-    typedef MethodCallbackData<T, StaticVoidMethodCallback> StaticVoidMethodCallbackData;
-    typedef MethodCallbackData<T, StaticMethodCallback> StaticMethodCallbackData;
+    using StaticVoidMethodCallbackData =
+        MethodCallbackData<T, StaticVoidMethodCallback>;
+    using StaticMethodCallbackData =
+        MethodCallbackData<T, StaticMethodCallback>;
 
-    typedef AccessorCallbackData<T,
-                                 StaticGetterCallback,
-                                 StaticSetterCallback> StaticAccessorCallbackData;
+    using StaticAccessorCallbackData =
+        AccessorCallbackData<T, StaticGetterCallback, StaticSetterCallback>;
 
     template <StaticSetterCallback method>
-    static napi_value WrappedMethod(napi_env env, napi_callback_info info) noexcept;
+    static napi_value WrappedMethod(napi_env env,
+                                    napi_callback_info info) NAPI_NOEXCEPT;
 
     template <StaticSetterCallback setter> struct StaticSetterTag {};
 
     template <StaticSetterCallback setter>
-    static napi_callback WrapStaticSetter(StaticSetterTag<setter>) noexcept { return &This::WrappedMethod<setter>; }
-    static napi_callback WrapStaticSetter(StaticSetterTag<nullptr>) noexcept { return nullptr; }
+    static napi_callback WrapStaticSetter(StaticSetterTag<setter>)
+        NAPI_NOEXCEPT {
+      return &This::WrappedMethod<setter>;
+    }
+    static napi_callback WrapStaticSetter(StaticSetterTag<nullptr>)
+        NAPI_NOEXCEPT {
+      return nullptr;
+    }
 
     bool _construction_failed = true;
   };
@@ -2244,6 +2280,196 @@ namespace Napi {
     napi_threadsafe_function _tsfn;
   };
 
+  // A TypedThreadSafeFunction by default has no context (nullptr) and can
+  // accept any type (void) to its CallJs.
+  template <typename ContextType = std::nullptr_t,
+            typename DataType = void,
+            void (*CallJs)(Napi::Env, Napi::Function, ContextType*, DataType*) =
+                nullptr>
+  class TypedThreadSafeFunction {
+   public:
+    // This API may only be called from the main thread.
+    // Helper function that returns nullptr if running N-API 5+, otherwise a
+    // non-empty, no-op Function. This provides the ability to specify at
+    // compile-time a callback parameter to `New` that safely does no action
+    // when targeting _any_ N-API version.
+#if NAPI_VERSION > 4
+    static std::nullptr_t EmptyFunctionFactory(Napi::Env env);
+#else
+    static Napi::Function EmptyFunctionFactory(Napi::Env env);
+#endif
+    static Napi::Function FunctionOrEmpty(Napi::Env env,
+                                          Napi::Function& callback);
+
+#if NAPI_VERSION > 4
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [missing] Resource [missing] Finalizer [missing]
+    template <typename ResourceString>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context = nullptr);
+
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [missing] Resource [passed] Finalizer [missing]
+    template <typename ResourceString>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        const Object& resource,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context = nullptr);
+
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [missing] Resource [missing] Finalizer [passed]
+    template <typename ResourceString,
+              typename Finalizer,
+              typename FinalizerDataType = void>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context,
+        Finalizer finalizeCallback,
+        FinalizerDataType* data = nullptr);
+
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [missing] Resource [passed] Finalizer [passed]
+    template <typename ResourceString,
+              typename Finalizer,
+              typename FinalizerDataType = void>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        const Object& resource,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context,
+        Finalizer finalizeCallback,
+        FinalizerDataType* data = nullptr);
+#endif
+
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [passed] Resource [missing] Finalizer [missing]
+    template <typename ResourceString>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        const Function& callback,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context = nullptr);
+
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [passed] Resource [passed] Finalizer [missing]
+    template <typename ResourceString>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        const Function& callback,
+        const Object& resource,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context = nullptr);
+
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [passed] Resource [missing] Finalizer [passed]
+    template <typename ResourceString,
+              typename Finalizer,
+              typename FinalizerDataType = void>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        const Function& callback,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context,
+        Finalizer finalizeCallback,
+        FinalizerDataType* data = nullptr);
+
+    // This API may only be called from the main thread.
+    // Creates a new threadsafe function with:
+    //   Callback [passed] Resource [passed] Finalizer [passed]
+    template <typename CallbackType,
+              typename ResourceString,
+              typename Finalizer,
+              typename FinalizerDataType>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        CallbackType callback,
+        const Object& resource,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context,
+        Finalizer finalizeCallback,
+        FinalizerDataType* data = nullptr);
+
+    TypedThreadSafeFunction<ContextType, DataType, CallJs>();
+    TypedThreadSafeFunction<ContextType, DataType, CallJs>(
+        napi_threadsafe_function tsFunctionValue);
+
+    operator napi_threadsafe_function() const;
+
+    // This API may be called from any thread.
+    napi_status BlockingCall(DataType* data = nullptr) const;
+
+    // This API may be called from any thread.
+    napi_status NonBlockingCall(DataType* data = nullptr) const;
+
+    // This API may only be called from the main thread.
+    void Ref(napi_env env) const;
+
+    // This API may only be called from the main thread.
+    void Unref(napi_env env) const;
+
+    // This API may be called from any thread.
+    napi_status Acquire() const;
+
+    // This API may be called from any thread.
+    napi_status Release();
+
+    // This API may be called from any thread.
+    napi_status Abort();
+
+    // This API may be called from any thread.
+    ContextType* GetContext() const;
+
+   private:
+    template <typename ResourceString,
+              typename Finalizer,
+              typename FinalizerDataType>
+    static TypedThreadSafeFunction<ContextType, DataType, CallJs> New(
+        napi_env env,
+        const Function& callback,
+        const Object& resource,
+        ResourceString resourceName,
+        size_t maxQueueSize,
+        size_t initialThreadCount,
+        ContextType* context,
+        Finalizer finalizeCallback,
+        FinalizerDataType* data,
+        napi_finalize wrapper);
+
+    static void CallJsInternal(napi_env env,
+                               napi_value jsCallback,
+                               void* context,
+                               void* data);
+
+   protected:
+    napi_threadsafe_function _tsfn;
+  };
   template <typename DataType>
   class AsyncProgressWorkerBase : public AsyncWorker {
     public:
@@ -2424,7 +2650,7 @@ namespace Napi {
     static T* Unwrap(Object wrapper);
 
    protected:
-    typedef ClassPropertyDescriptor<T> AddonProp;
+    using AddonProp = ClassPropertyDescriptor<T>;
     void DefineAddon(Object exports,
                      const std::initializer_list<AddonProp>& props);
     Napi::Object DefineProperties(Object object,

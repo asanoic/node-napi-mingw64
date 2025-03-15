@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "shell",
+      "label": "clean",
+      "command": "rm .b -rf && mkdir .b",
+      "problemMatcher": [],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+    },
+    {
+      "type": "shell",
+      "label": "run cmake",
+      "command": "cmake",
+      "presentation": {
+        "clear": true
+      },
+      "args": [
+        "..",
+        "-DCMAKE_BUILD_TYPE=Debug",
+        "-GNinja",
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/.b"
+      },
+    },
+    {
+      "type": "shell",
+      "label": "build",
+      "command": "cmake",
+      "problemMatcher": [],
+      "presentation": {
+        "clear": true
+      },
+      "args": [
+        "--build",
+        "."
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}/.b"
+      },
+      "dependsOn": "run cmake",
+    }
+  ]
+}

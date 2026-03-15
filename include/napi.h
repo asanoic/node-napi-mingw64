@@ -359,10 +359,10 @@ class BasicEnv {
   // ... occurs when comparing foo.Env() == bar.Env() or foo.Env() == nullptr
   bool operator==(const BasicEnv& other) const {
     return _env == other._env;
-  };
+  }
   bool operator==(std::nullptr_t /*other*/) const {
     return _env == nullptr;
-  };
+  }
 
 #if NAPI_VERSION > 2
   template <typename Hook, typename Arg = void>
@@ -543,6 +543,9 @@ class Value {
   bool IsDataView() const;    ///< Tests if a value is a JavaScript data view.
   bool IsBuffer() const;      ///< Tests if a value is a Node buffer.
   bool IsExternal() const;  ///< Tests if a value is a pointer to external data.
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+  bool IsSharedArrayBuffer() const;
+#endif
 
   /// Casts to another type of `Napi::Value`, when the actual type is known or
   /// assumed.
@@ -860,6 +863,9 @@ class Object : public TypeTaggable {
     template <typename ValueType>
     PropertyLValue& operator=(ValueType value);
 
+    /// Converts an L-value to a value. For convenience.
+    Value AsValue() const;
+
    private:
     PropertyLValue() = delete;
     PropertyLValue(Object object, Key key);
@@ -1112,6 +1118,12 @@ class Object : public TypeTaggable {
   /// https://tc39.es/ecma262/#sec-proxy-object-internal-methods-and-internal-slots-getprototypeof
   MaybeOrValue<bool> Seal() const;
 #endif  // NAPI_VERSION >= 8
+
+  MaybeOrValue<Object> GetPrototype() const;
+
+#ifdef NODE_API_EXPERIMENTAL_HAS_SET_PROTOTYPE
+  MaybeOrValue<bool> SetPrototype(const Object& value) const;
+#endif
 };
 
 template <typename T>
@@ -1198,6 +1210,21 @@ class Object::iterator {
   friend class Object;
 };
 #endif  // NODE_ADDON_API_CPP_EXCEPTIONS
+
+#ifdef NODE_API_EXPERIMENTAL_HAS_SHAREDARRAYBUFFER
+class SharedArrayBuffer : public Object {
+ public:
+  SharedArrayBuffer();
+  SharedArrayBuffer(napi_env env, napi_value value);
+
+  static SharedArrayBuffer New(napi_env env, size_t byteLength);
+
+  static void CheckCast(napi_env env, napi_value value);
+
+  void* Data();
+  size_t ByteLength();
+};
+#endif
 
 /// A JavaScript array buffer value.
 class ArrayBuffer : public Object {
@@ -1571,7 +1598,18 @@ class Promise : public Object {
 
   static void CheckCast(napi_env env, napi_value value);
 
+  Promise();
   Promise(napi_env env, napi_value value);
+
+  MaybeOrValue<Promise> Then(napi_value onFulfilled) const;
+  MaybeOrValue<Promise> Then(napi_value onFulfilled,
+                             napi_value onRejected) const;
+  MaybeOrValue<Promise> Catch(napi_value onRejected) const;
+
+  MaybeOrValue<Promise> Then(const Function& onFulfilled) const;
+  MaybeOrValue<Promise> Then(const Function& onFulfilled,
+                             const Function& onRejected) const;
+  MaybeOrValue<Promise> Catch(const Function& onRejected) const;
 };
 
 template <typename T>
@@ -1701,7 +1739,7 @@ class ObjectReference : public Reference<Object> {
   MaybeOrValue<bool> Set(const std::string& utf8name, napi_value value) const;
   MaybeOrValue<bool> Set(const std::string& utf8name, Napi::Value value) const;
   MaybeOrValue<bool> Set(const std::string& utf8name,
-                         std::string& utf8value) const;
+                         const std::string& utf8value) const;
   MaybeOrValue<bool> Set(const std::string& utf8name, bool boolValue) const;
   MaybeOrValue<bool> Set(const std::string& utf8name, double numberValue) const;
 
@@ -3094,8 +3132,8 @@ class AsyncProgressWorkerBase : public AsyncWorker {
 
     AsyncProgressWorkerBase* asyncprogressworker() {
       return _asyncprogressworker;
-    };
-    DataType* data() { return _data; };
+    }
+    DataType* data() { return _data; }
 
    private:
     AsyncProgressWorkerBase* _asyncprogressworker;
